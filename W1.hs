@@ -9,24 +9,34 @@ module W1 where
 -- Ex 1: define variables one, two and three. They should all have
 -- type Int and values 1, 2 and 3. This exercise has no tests.
 
+one :: Integer
+one = 1
+
+two :: Integer
+two = 2
+
+three :: Integer
+three = 3
+
 -- Ex 2: define the function double of type Integer->Integer. Double
 -- should take one argument and return it multiplied by two.
 
 double :: Integer -> Integer
-double x = undefined
+double x = x * 2
 
 -- Ex 3: define the function quadruple that uses the function double
 -- from the previous exercise to return its argument multiplied by
 -- four.
 
 quadruple :: Integer -> Integer
-quadruple x = undefined
+quadruple x = double (double x)
 
 -- Ex 4: define the function poly2. It should take four arguments of
 -- type Double, a, b, c, and x and return a*x^2+b*x+c. Give poly2 a
 -- type signature, i.e. poly2 :: something.
 
-poly2 = undefined
+poly2 :: Double -> Double -> Double -> Double -> Double
+poly2 a b c x = a*x^2+b*x+c
 
 -- Ex 5: define the function eeny that returns "eeny" for even inputs
 -- and "meeny" for odd inputs.
@@ -34,7 +44,7 @@ poly2 = undefined
 -- Ps. have a look at the built in function "even"
 
 eeny :: Integer -> String
-eeny = undefined
+eeny x = if even x then "eeny" else "meeny"
 
 -- Ex 6: fizzbuzz! Define the a function fizzbuzz that returns "Fizz"
 -- for numbers divisible by 3, "Buzz" for numbers divisible by 5, and
@@ -43,7 +53,16 @@ eeny = undefined
 --
 -- You can use the function mod to compute modulo.
 
-fizzbuzz = undefined
+fizzbuzz :: Integer -> String
+fizzbuzz x = if mod x 3 == 0
+             then (if mod x 5 == 0
+                   then "FizzBuzz"
+                   else "Fizz")
+             else (if mod x 5 == 0
+                   then "Buzz"
+                   else "")
+-- This was my original solution and googled the answer afterwards
+-- Using guards seems to make it a lot better
 
 -- Ex 7: define a function isZero that returns True if it is given an
 -- Integer that is 0, and False otherwise. Give isZero a type signature.
@@ -52,20 +71,24 @@ fizzbuzz = undefined
 --
 -- Ps. the type of booleans in haskell is Bool
 
-isZero = undefined
+isZero :: Integer -> Bool
+isZero 0 = True
+isZero x = False
 
 -- Ex 8: implement using recursion a function sumTo such that
 --   sumTo n
 -- computes the sum 1+2+...+n
 
 sumTo :: Integer -> Integer
-sumTo = undefined
+sumTo 0 = 0
+sumTo x = x + sumTo (x - 1)
 
 -- Ex 9: power n k should compute n to the power k (i.e. n^k)
 -- Use recursion.
 
 power :: Integer -> Integer -> Integer
-power = undefined
+power n 1 = n
+power n k = n * power n (k - 1)
 
 -- Ex 10: ilog2 n should be the number of times you can halve the
 -- integer n (rounding down) before you get 1.
@@ -74,7 +97,9 @@ power = undefined
 -- division.
 
 ilog2 :: Integer -> Integer
-ilog2 = undefined
+ilog2 0 = 0
+ilog2 1 = 0
+ilog2 x = 1 + ilog2 (div x 2)
 
 -- Ex 11: compute binomial coefficients using recursion. Binomial
 -- coefficients are defined by the following equations:
@@ -86,7 +111,9 @@ ilog2 = undefined
 -- Hint! pattern matching is your friend.
 
 binomial :: Integer -> Integer -> Integer
-binomial = undefined
+binomial n 0 = 1
+binomial 0 k = 0
+binomial n k = binomial (n-1) k + binomial (n-1) (k-1)
 
 -- Ex 12: The tribonacci numbers are defined by the equations
 --
@@ -99,7 +126,23 @@ binomial = undefined
 -- computes T(n). You'll probably want to define a helper function.
 
 tribonacci :: Integer -> Integer
-tribonacci = undefined
+tribonacci 1 = 1
+tribonacci 2 = 1
+tribonacci 3 = 2
+tribonacci n = tribonacci' 1 1 2 n
+
+tribonacci' :: Integer -> Integer -> Integer -> Integer -> Integer
+tribonacci' a b c 3 = c
+tribonacci' a b c n = tribonacci' b c (a+b+c) (n-1)
+
+-- Not sure if I made it any faster... Answer below was also accepted by the tests
+
+-- tribonacci 1 = 1
+-- tribonacci 2 = 1
+-- tribonacci 3 = 2
+-- tribonacci n = tribonacci (n-1) + tribonacci (n-2) + tribonacci (n-3)
+
+
 
 -- Ex 13: implement the euclidean algorithm for finding the greatest
 -- common divisor: http://en.wikipedia.org/wiki/Euclidean_algorithm
