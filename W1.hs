@@ -148,7 +148,7 @@ tribonacci' a b c n = tribonacci' b c (a+b+c) (n-1)
 -- common divisor: http://en.wikipedia.org/wiki/Euclidean_algorithm
 
 myGcd :: Integer -> Integer -> Integer
-myGcd = undefined
+myGcd a b = if b == 0 then a else myGcd b (a `mod` b)
 
 -- Ex 14: The Haskell Prelude (standard library) defines the type
 -- Ordering with values LT, GT and EQ. You try out Ordering by
@@ -176,7 +176,9 @@ myGcd = undefined
 --   funnyCompare 2 3 ==> LT
 
 funnyCompare :: Int -> Int -> Ordering
-funnyCompare = undefined
+funnyCompare a b = if (odd a && odd b) || (even a && even b)
+                   then compare a b
+                   else if even a then LT else GT
 
 -- Ex 15: Implement the function funnyMin that returns the minimum of
 -- its two arguments, according to the ordering implemented by
@@ -187,7 +189,7 @@ funnyCompare = undefined
 -- expression or define a helper function.
 
 funnyMin :: Int -> Int -> Int
-funnyMin = undefined
+funnyMin a b = if funnyCompare a b == LT then a else b
 
 -- Ex 16: implement the recursive function pyramid that returns
 -- strings like this:
@@ -203,7 +205,11 @@ funnyMin = undefined
 -- * you'll need a (recursive) helper function
 
 pyramid :: Integer -> String
-pyramid = undefined
+pyramid 0 = "0"
+pyramid n = pyramid' 0 n
+
+pyramid' :: Integer -> Integer -> String
+pyramid' n max = show n ++ "," ++ (if (n+1) == max then show (n+1) else pyramid' (n+1) max) ++ "," ++ show n
 
 -- Ex 17: implement the function smallestDivisor that returns the
 -- smallest number (greater than 1) that divides the given number.
@@ -218,7 +224,14 @@ pyramid = undefined
 -- remember this in the next exercise!
 
 smallestDivisor :: Integer -> Integer
-smallestDivisor = undefined
+smallestDivisor k = smallestDivisor' k 2
+
+smallestDivisor' :: Integer -> Integer -> Integer
+smallestDivisor' k d = if compare d (div k 2) == GT
+                       then k
+                       else (if mod k d == 0
+                             then d
+                             else smallestDivisor' k (d+1))
 
 -- Ex 18: implement a function isPrime that checks if the given number
 -- is a prime number. Use the function smallestDivisor.
@@ -226,11 +239,16 @@ smallestDivisor = undefined
 -- Ps. 0 and 1 are not prime numbers
 
 isPrime :: Integer -> Bool
-isPrime = undefined
+isPrime 0 = False
+isPrime 1 = False
+isPrime n = smallestDivisor n == n
 
 -- Ex 19: implement a function nextPrime that returns the first prime
 -- number that comes after the given number. Use the function isPrime
 -- you just defined.
 
 nextPrime :: Integer -> Integer
-nextPrime = undefined
+nextPrime k = nextPrime' (k+1)
+
+nextPrime' :: Integer -> Integer
+nextPrime' k = if isPrime k then k else nextPrime' (k+1)
