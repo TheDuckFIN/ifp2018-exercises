@@ -30,13 +30,15 @@ import Data.Char
 -- Ex 1: Define the constant years, that is a list of the values 1982,
 -- 2004 and 2012 in this order.
 
-years = undefined
+years = [1982, 2004, 2012]
 
 -- Ex 2: define the function measure that for an empty list returns -1
 -- and for other lists returns the length of the list.
 
 measure :: [String] -> Int
-measure ss = undefined
+measure ss
+  | null ss   = -1
+  | otherwise = length ss
 
 -- Ex 3: define the function takeFinal, which returns the n last
 -- elements of the given list.
@@ -44,7 +46,9 @@ measure ss = undefined
 -- If the list is shorter than n, return all elements.
 
 takeFinal :: Int -> [Int] -> [Int]
-takeFinal n xs = undefined
+takeFinal n xs
+  | length xs <= n = xs
+  | otherwise      = drop (length xs - n) xs
 
 -- Ex 4: remove the nth element of the given list. More precisely,
 -- return a list that is identical to the given list except the nth
@@ -59,7 +63,7 @@ takeFinal n xs = undefined
 -- The [a] in the type signature means "a list of any type"
 
 remove :: Int -> [a] -> [a]
-remove i xs = undefined
+remove i xs = take i xs ++ drop (i+1) xs
 
 -- Ex 5: substring i n s should return the length n substring of s
 -- starting at index i.
@@ -67,7 +71,9 @@ remove i xs = undefined
 -- Remember that strings are lists!
 
 substring :: Int -> Int -> String -> String
-substring i n s = undefined
+substring i n s = take n $ drop i s
+
+-- take n $ drop i s is the same as take n (drop i s)
 
 -- Ex 6: implement the function mymax that takes as argument a
 -- measuring function (of type a -> Int) and two values (of type a).
