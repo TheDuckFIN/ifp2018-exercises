@@ -71,7 +71,7 @@ remove i xs = take i xs ++ drop (i+1) xs
 -- Remember that strings are lists!
 
 substring :: Int -> Int -> String -> String
-substring i n s = take n $ drop i s
+substring i n s = take n . drop i $ s
 
 -- take n $ drop i s is the same as take n (drop i s)
 
@@ -89,7 +89,9 @@ substring i n s = take n $ drop i s
 --  mymax head   [1,2,3] [4,5]  ==>  [4,5]
 
 mymax :: (a -> Int) -> a -> a -> a
-mymax measure a b = undefined
+mymax measure a b
+  | measure a > measure b = a
+  | otherwise             = b
 
 -- Ex 7: countPalindromes receives a list of strings and returns a
 -- count of how many of the strings are palindromes (i.e. how many
@@ -98,7 +100,7 @@ mymax measure a b = undefined
 -- Remember the functions length, filter and reverse
 
 countPalindromes :: [String] -> Int
-countPalindromes ss = undefined
+countPalindromes ss = length $ filter (\s -> s == reverse s) ss
 
 -- Ex 8: Implement a function funny, that
 --  - takes in a list of strings
@@ -116,7 +118,7 @@ countPalindromes ss = undefined
 --  funny ["boing","functional","foo","haskell"] ==> "FUNCTIONAL HASKELL"
 
 funny :: [String] -> String
-funny strings = undefined
+funny strings = map toUpper $ intercalate " " $ filter (\x -> length x > 5) strings
 
 -- Ex 9: powers k max should return all the powers of k that are less
 -- than or equal to max. For example:
@@ -130,7 +132,7 @@ funny strings = undefined
 --   * the function takeWhile
 
 powers :: Int -> Int -> [Int]
-powers n max = undefined
+powers n max = takeWhile (<= max) $ map (\x -> n^x) [0..]
 
 -- Ex 10: implement a search function that takes an updating function,
 -- a checking function and an initial value. Search should repeatedly
@@ -151,20 +153,24 @@ powers n max = undefined
 --     ==> Avvt
 
 search :: (a->a) -> (a->Bool) -> a -> a
-search update check initial = undefined
+search update check initial
+  | check initial = initial
+  | otherwise     = search update check $ update initial
 
 -- Ex 11: given numbers n and k, build the list of numbers n,n+1..k.
 -- Use recursion and the : operator to build the list.
 
 fromTo :: Int -> Int -> [Int]
-fromTo n k = undefined
+fromTo n k
+  | n <= k     = n : fromTo (n+1) k
+  | otherwise = []
 
 -- Ex 12: given i, build the list of sums [1, 1+2, 1+2+3, .., 1+2+..+i]
 --
 -- Ps. you'll probably need a recursive helper function
 
 sums :: Int -> [Int]
-sums i = undefined
+sums i = map (\x -> sum [1..x]) [1..i]
 
 -- Ex 13: using list pattern matching and recursion, define a function
 -- mylast that returns the last value of the given list. For an empty
@@ -175,14 +181,18 @@ sums i = undefined
 --   mylast 0 [1,2,3] ==> 3
 
 mylast :: a -> [a] -> a
-mylast def xs = undefined
+mylast def []           = def
+mylast def (first:rest) = mylast first rest
 
 -- Ex 14: define a function that checks if the given list is in
 -- increasing order. Use recursion and pattern matching. Don't use any
 -- library list functions.
 
 sorted :: [Int] -> Bool
-sorted xs = undefined
+sorted (x:xs)
+  | xs == []    = True
+  | x > xs !! 0 = False
+  | otherwise   = sorted xs
 
 -- Ex 15: compute the partial sums of the given list like this:
 --
