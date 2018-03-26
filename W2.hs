@@ -201,7 +201,10 @@ sorted (x:xs)
 --   sumsOf []       ==>  []
 
 sumsOf :: [Int] -> [Int]
-sumsOf xs = undefined
+sumsOf [] = []
+sumsOf (x:xs)
+  | length xs == 0 = x : sumsOf []
+  | otherwise      = x : sumsOf ((head xs + x) : tail xs)
 
 -- Ex 16: implement the function merge that merges two sorted lists of
 -- Ints into a sorted list
@@ -214,7 +217,13 @@ sumsOf xs = undefined
 --   merge [1,1,6] [1,2]   ==> [1,1,1,2,6]
 
 merge :: [Int] -> [Int] -> [Int]
-merge xs ys = undefined
+merge [] []     = []
+merge [] (y:ys) = y : merge [] ys
+merge (x:xs) [] = x : merge [] xs
+merge (x:xs) (y:ys)
+  | x > y     = y : merge (x : xs) ys
+  | y > x     = x : merge xs (y : ys)
+  | otherwise = x : y : merge xs ys
 
 -- Ex 17: using the merge function you just defined, implement mergesort
 --
@@ -231,7 +240,8 @@ merge xs ys = undefined
 mergesort :: [Int] -> [Int]
 mergesort [] = []
 mergesort [x] = [x]
-mergesort xs = undefined
+mergesort xs = merge (mergesort (fst half)) (mergesort (snd half))
+  where half = splitAt (length xs `div` 2) xs
 
 -- Ex 18: define the function mymaximum that takes a list and a
 -- comparing function of type a -> a -> Ordering and returns the
@@ -250,7 +260,11 @@ mergesort xs = undefined
 --     ==> 0
 
 mymaximum :: (a -> a -> Ordering) -> a -> [a] -> a
-mymaximum cmp def xs = undefined
+mymaximum cmp def [] = def
+mymaximum cmp def (x:xs) = foldl bigger x xs
+  where bigger acc x
+          | cmp acc x == LT = x
+          | otherwise       = acc
 
 -- Ex 19: define a version of map that takes a two-argument function
 -- and two lists. Example:
@@ -262,7 +276,9 @@ mymaximum cmp def xs = undefined
 -- name.
 
 map2 :: (a -> b -> c) -> [a] -> [b] -> [c]
-map2 f as bs = undefined
+map2 f [] _          = []
+map2 f _ []          = []
+map2 f (a:as) (b:bs) = f a b : map2 f as bs
 
 -- Ex 20: in this exercise you get to implement an interpreter for a
 -- simple language. You should keep track of the x and y coordinates,
@@ -295,4 +311,16 @@ map2 f as bs = undefined
 -- your interpreter correctly but weirdly :(
 
 interpreter :: [String] -> [String]
-interpreter commands = undefined
+interpreter commands = interpret 0 0 commands
+
+interpret :: Int -> Int -> [String] -> [String]
+interpret _ _ [] = []
+interpret x y (cmd:commands)
+  | cmd == "up"     = interpret x (y+1) commands
+  | cmd == "down"   = interpret x (y-1) commands
+  | cmd == "left"   = interpret (x-1) y commands
+  | cmd == "right"  = interpret (x+1) y commands
+  | cmd == "printX" = show x : interpret x y commands
+  | cmd == "printY" = show y : interpret x y commands
+  | otherwise       = interpret x y commands
+
