@@ -85,7 +85,7 @@ readWords n = do
 readUntil :: (String -> Bool) -> IO [String]
 readUntil f = do
   input <- getLine
-  if f input == True
+  if f input
     then return []
     else do x <- readUntil f
             return $ input : x
@@ -284,9 +284,19 @@ mkCounter = do
 
 hFetchLines :: Handle -> [Int] -> IO [String]
 hFetchLines h nums = do
-  content <- hGetContents h
-  putStrLn content
-  return []
+  lines <- readLines h
+  return $ map snd (filter (\x -> elem (fst x) nums) (zip [1..] lines))
+
+readLines :: Handle -> IO [String]
+readLines h = do
+  line <- hGetLine h
+  eof <- hIsEOF h
+  if eof
+    then return $ line : []
+    else do rest <- readLines h
+            return $ line : rest
+
+-- Okay this solution is awful, but I had a lot of problems with getting it right...
 
 
 
@@ -305,7 +315,16 @@ hFetchLines h nums = do
 -- NB! The lines might have different numbers of elements.
 
 readCSV :: FilePath -> IO [[String]]
-readCSV path = undefined
+readCSV path = do
+  file <- readFile path
+  return $ map (splitOn ',') $ lines file
+
+-- Data.List.Split is not imported so I guess I'll have to reinvent the wheel...
+splitOn :: Char -> String -> [String]
+splitOn delimiter str = case break (==delimiter) str of
+  (a, ',':b) -> a : splitOn delimiter b
+  (a, "")    -> [a]
+
 
 ------------------------------------------------------------------------------
 -- Ex 18: your task is to compare two files, a and b. The files should
@@ -348,7 +367,16 @@ readCSV path = undefined
 -- [String] -> [String] -> [String].
 
 compareFiles :: FilePath -> FilePath -> IO ()
-compareFiles a b = undefined
+compareFiles a b = do
+  fstFile <- readFile a
+  sndFile <- readFile b
+  mapM_ putStrLn (compareLines (lines fstFile) (lines sndFile))
+
+compareLines :: [String] -> [String] -> [String]
+compareLines [] []         = []
+compareLines (a:as) (b:bs) = if a == b
+  then compareLines as bs
+  else ("< " ++ a) : ("> " ++ b) : compareLines as bs
 
 ------------------------------------------------------------------------------
 -- Ex 19: In this exercise we see how a program can be split into a
@@ -377,4 +405,10 @@ compareFiles a b = undefined
 --
 
 interact' :: ((String,st) -> (Bool,String,st)) -> st -> IO st
-interact' f state = undefined
+interact' f state = do
+  input <- getLine
+  let (continue, result, newState) = f (input, state)
+  putStr result
+  if continue
+    then interact' f newState
+    else return newState
