@@ -251,9 +251,8 @@ data Fun a = Fun (Int -> a)
 runFun :: Fun a -> Int -> a
 runFun (Fun f) x = f x
 
--- fmap :: forall a b. (a -> b) -> Fun a -> Fun b
-
 instance Functor Fun where
+  fmap f a = Fun (\i -> f (runFun a i))
 
 ------------------------------------------------------------------------------
 -- Ex 17: Define the operator ||| that works like ||, but forces its
