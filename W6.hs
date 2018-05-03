@@ -42,18 +42,18 @@ readNames s =
 -- (NB! There are obviously other corner cases like the inputs " " and
 -- "a b c", but you don't need to worry about those here)
 split :: String -> Maybe (String,String)
-split s = undefined
+split s = elemIndex ' ' s ?> \x -> Just (splitAt x s) ?> \x -> Just (fst x, tail $ snd x)
 
 -- checkDuplacate should take a pair of two strings and return Nothing
 -- if they are the same. Otherwise the strings are returned.
 checkDuplicate :: (String, String) -> Maybe (String, String)
-checkDuplicate (for,sur) = undefined
+checkDuplicate (for,sur) = if for == sur then Nothing else Just (for, sur)
 
 -- checkCapitals should take a pair of two strings and return them
 -- unchanged if both start with a capital letter. Otherwise Nothing is
 -- returned.
 checkCapitals :: (String, String) -> Maybe (String, String)
-checkCapitals (for,sur) = undefined
+checkCapitals (for,sur) = if (isUpper (for !! 0) && isUpper (sur !! 0)) then Just (for, sur) else Nothing
 
 ------------------------------------------------------------------------------
 -- Ex 2: implement a function myDrop that works just like drop, but
@@ -77,7 +77,7 @@ checkCapitals (for,sur) = undefined
 --    ==> Nothing
 
 myDrop :: Maybe Int -> Maybe [a] -> Maybe [a]
-myDrop mi ml = undefined
+myDrop mi ml = mi >>= \x -> ml >>= \y -> if length y < x || x < 0 then fail "" else return $ drop x y
 
 ------------------------------------------------------------------------------
 -- Ex 3: given a list of values and a list of indices, return the sum
@@ -96,8 +96,11 @@ myDrop mi ml = undefined
 --  selectSum [2,7,5,3,9] [0,2,5]
 --    Nothing
 
+safeIndex :: [a] -> Int -> Maybe a
+safeIndex xs i = if length xs > i && i >= 0 then Just (xs !! i) else Nothing
+
 selectSum :: Num a => [a] -> [Int] -> Maybe a
-selectSum xs is = undefined
+selectSum xs is = mapM (\i -> safeIndex xs i) is >>= \x -> return $ sum x
 
 ------------------------------------------------------------------------------
 -- Ex 4: below you'll find the Logger monad from the lectures.
@@ -139,9 +142,19 @@ instance Applicative Logger where
 msg :: String -> Logger ()
 msg s = Logger [s] ()
 
+--   B(n,0) = 1
+--   B(0,k) = 0, when k>0
+--   B(n,k) = B(n-1,k-1) + B(n-1,k)
+
 -- Implement this:
 binom :: Integer -> Integer -> Logger Integer
-binom n k = undefined
+binom n 0 = msg ("B(" ++ show n ++ ",0)") >> return 1
+binom 0 k = msg ("B(0," ++ show k ++ ")") >> return 0
+binom n k = do
+  x <- binom (n-1) (k-1)
+  y <- binom (n-1) k
+  msg ("B(" ++ show n ++ "," ++ show k ++ ")")
+  return $ x + y
 
 ------------------------------------------------------------------------------
 -- Ex 5: using the State monad, write the operation update that first
@@ -153,7 +166,7 @@ binom n k = undefined
 --    ==> ((),7)
 
 update :: State Int ()
-update = undefined
+update = get >>= \x -> put (x * 2 + 1)
 
 ------------------------------------------------------------------------------
 -- Ex 6: using the State monad, walk through a list and add up all the
@@ -168,7 +181,11 @@ update = undefined
 --    ==> (4,10)
 
 lengthAndSum :: [Int] -> State Int Int
-lengthAndSum xs = undefined
+lengthAndSum []     = return 0
+lengthAndSum (x:xs) = do
+  modify (+x)
+  y <- lengthAndSum xs
+  return $ y + 1
 
 ------------------------------------------------------------------------------
 -- Ex 7: Let's use a state of type [a] to keep track of which elements
@@ -185,7 +202,9 @@ lengthAndSum xs = undefined
 -- PS. Order of the list in the state doesn't matter
 
 oddUpdate :: Eq a => a -> State [a] ()
-oddUpdate x = undefined
+oddUpdate x = do
+  cur <- get
+  if elem x cur then put $ filter (\y -> x /= y) cur else put $ x : cur
 
 ------------------------------------------------------------------------------
 -- Ex 8: Define the operation oddsOp, so that the function odds
