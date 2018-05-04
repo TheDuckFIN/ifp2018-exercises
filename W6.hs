@@ -224,7 +224,7 @@ odds :: Eq a => [a] -> [a]
 odds xs = snd (runState (oddsOp xs) [])
 
 oddsOp :: Eq a => [a] -> State [a] ()
-oddsOp xs = undefined
+oddsOp xs = mapM_ oddUpdate xs
 
 ------------------------------------------------------------------------------
 -- Ex 9: implement the function ifM, that takes three monadic
@@ -244,7 +244,7 @@ test = do
   return (x<10)
 
 ifM :: Monad m => m Bool -> m a -> m a -> m a
-ifM opBool opThen opElse = undefined
+ifM opBool opThen opElse = opBool >>= \x -> if x then opThen else opElse
 
 ------------------------------------------------------------------------------
 -- Ex 10: the standard library function Control.Monad.mapM defines a
@@ -270,7 +270,9 @@ safeDiv x 0.0 = Nothing
 safeDiv x y = Just (x/y)
 
 mapM2 :: Monad m => (a -> b -> m c) -> [a] -> [b] -> m [c]
-mapM2 op xs ys = undefined
+mapM2 _ [] _           = return []
+mapM2 _ _ []           = return []
+mapM2 op (x:xs) (y:ys) = op x y >>= \x -> mapM2 op xs ys >>= \y -> return $ x : y
 
 ------------------------------------------------------------------------------
 -- Ex 11&12: Funnykiztan has cities that are named with by integers
@@ -344,7 +346,12 @@ routeExists :: [[Int]] -> Int -> Int -> Bool
 routeExists cities i j = j `elem` execState (dfs cities i) []
 
 dfs :: [[Int]] -> Int -> State [Int] ()
-dfs cities i = undefined
+dfs cities i = do
+  cur <- get
+  if i `elem` cur
+  then return () -- Tried also using when for this but failed with types... So I'll just return void
+  else do put $ i : cur
+          mapM_ (dfs cities) (cities !! i)
 
 ------------------------------------------------------------------------------
 -- Ex 13: define the function orderedPairs that returns all pairs
