@@ -366,7 +366,10 @@ dfs cities i = do
 -- PS. once again the tests don't care about the order of results
 
 orderedPairs :: [Int] -> [(Int,Int)]
-orderedPairs xs = undefined
+orderedPairs xs = do a <- zip [0..] xs
+                     b <- zip [0..] xs
+                     if fst a < fst b && snd a < snd b then return (snd a, snd b) else fail ""
+
 
 ------------------------------------------------------------------------------
 -- Ex 14: Using the list monad, produce a list of all pairs of
@@ -384,7 +387,9 @@ orderedPairs xs = undefined
 -- PS. the order of the returned list does not matter
 
 pairs :: Eq a => [a] -> [(a,a)]
-pairs xs = undefined
+pairs xs = do a <- xs
+              b <- xs
+              if (a /= b) then return (a,b) else fail ""
 
 ------------------------------------------------------------------------------
 -- Ex 15: the standard library defines the function
@@ -411,7 +416,11 @@ sumNotTwice :: [Int] -> Int
 sumNotTwice xs = fst $ runState (foldM fsum 0 xs) []
 
 fsum :: Int -> Int -> State [Int] Int
-fsum acc x = undefined
+fsum acc x = do cur <- get
+                if x `elem` cur
+                then return acc
+                else do put $ x : cur
+                        return $ acc + x
 
 ------------------------------------------------------------------------------
 -- Ex 16: here is the Result type from last week. Implement a Monad
@@ -451,7 +460,11 @@ instance Applicative Result where
   (<*>) = ap
 
 instance Monad Result where
-  -- implement return and >>=
+  return x         = MkResult x
+  fail x           = Failure x
+  NoResult >>= _   = NoResult
+  Failure x >>= _  = Failure x
+  MkResult x >>= k = k x
 
 ------------------------------------------------------------------------------
 -- Ex 17&18: Here is the type SL that combines the State and Logger
