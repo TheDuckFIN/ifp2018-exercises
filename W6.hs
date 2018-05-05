@@ -514,7 +514,7 @@ modifySL :: (Int->Int) -> SL ()
 modifySL f = SL (\s -> ((),f s,[]))
 
 instance Functor SL where
-  -- implement fmap
+  fmap f (SL sa) = SL (\s0 -> let (a, s, l) = sa s0 in (f a, s, l))
 
 -- again, disregard this
 instance Applicative SL where
@@ -522,4 +522,8 @@ instance Applicative SL where
   (<*>) = ap
 
 instance Monad SL where
-  -- implement return and >>=
+  return x     = SL (\s0 -> (x, s0, []))
+  SL sa >>= fn = SL (\s0 -> let (a, s, l)    = sa s0
+                                SL sb        = fn a
+                                (af, sf, sl) = sb s
+                            in (af, sf, l ++ sl))
